@@ -1,0 +1,7 @@
+take in annual income, tax code, pension (if applicable)
+calculate tax
+calculate national insurance
+calculate pension (if applicable)
+Output information in an ASCII table containing
+[Yearly, Monthly, Weekly, Daily]
+For Gross, Tax, NIC, Pension, Total, Net
