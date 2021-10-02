@@ -59,34 +59,64 @@ def screen_clear():
 
 def get_tax_code():
     tax_code = input('Tax Code: ')
-    input_check = False
-    for letter in alpha:
-        if letter in tax_code:
-            input_check = True
-    if input_check == False:
-        print('Invalid Input. Please enter a valid Tax Code.')
+    print('Tax Code after input:', tax_code)
+    # Checking input contains a letter
+    tax_letter_index = ''
+
+    for char in tax_code:
+        if char.upper() in alpha:
+            tax_letter_index = tax_code.index(char)
+            print('Passed letter check')
+            break
+    
+    if tax_letter_index == '':
+        print('Failed letter check')
+        print('Invalid input. Please enter your tax code.')
         get_tax_code()
+
+    print('Tax Code after letter check:', tax_code)
+
+    tax_letter = tax_code[tax_letter_index:].upper()
+
+    # Checking input has a key match in the tax_letters dictionary
+    if tax_letter not in tax_letters.keys():
+        print('Tax Code during dictionary match check (false):', tax_code)
+        print('Failed dictionary match check')
+        print('Invalid input. Please enter your tax code.')
+        get_tax_code()
+    elif tax_letter in tax_letters.keys():
+        print('Tax Code during dictionary match check (true):', tax_code)
+        print('Passed dictionary match check')
+        
+    print('Tax Code after dictionary match check:', tax_code)
+
     return tax_code
 
 def tax_code_seperator(tax_code):
     for char in tax_code:
         if char.upper() in alpha:
             tax_letter_index = tax_code.index(char)
+            print('Passed letter check')
             break
-    
+
+    tax_letter = tax_code[tax_letter_index:].upper()
+
+    # Getting personal allowance from Tax Code
     personal_allowance = tax_code[:tax_letter_index]
     if personal_allowance == '':
         personal_allowance = 0
     else:
-        personal_allowance = float(personal_allowance) * 10
+        personal_allowance = int(personal_allowance) * 10
 
+    # Setting personal allowance exceptions for gross income over £100,000
     if gross_income > 100000:
         personal_allowance = set_personal_allowance - ((gross_income - 100000) / 2)
         if personal_allowance < 0:
             personal_allowance = 0
+            
+    print('Personal Allowance:', personal_allowance)
+    print('Tax Letter:', tax_letter)
     
-    tax_letter = tax_code[tax_letter_index:].upper()
-
     return personal_allowance, tax_letter
 
 def calculate_tax(gross_income, personal_allowance):
@@ -150,12 +180,47 @@ def get_formatted(table_values):
             if len(a) < 12:
                 len_diff = 12 - len(a)
                 spacer = ' ' * len_diff
-                converted = '£{}{:,.2f}'.format(spacer, value)
+                converted = '{}{:,.2f}'.format(spacer, value)
             else:
-                converted = '£{:,.2f}'.format(value)
+                converted = '{:,.2f}'.format(value)
             converted_values[i].append(converted)
         i += 1
     return converted_values
+
+def tableformatter(converted_values):
+
+    spacertable = [[], [], [], []]    
+    formatted_values = [[], [], [], []]
+
+    for i in range(len(converted_values[0])):
+
+        max_diff = 0
+        max_len = 12
+        tablespacer = ''
+        titlespacer = ''
+
+        for o in range(len(converted_values)):
+
+            spacer = ''
+            
+            formatted = '£{}'.format(converted_values[o][i])
+            if len(converted_values[o][i]) > 12:               
+                len_diff = len(converted_values[o][i]) - 12
+                if len_diff >= max_diff:
+                    max_diff = len_diff
+                    max_len = len(converted_values[o][i])
+            if len(converted_values[o][i]) < max_len:
+                len_diff = max_len - len(converted_values[o][i])
+                spacer = ' ' * len_diff
+                formatted = '£{}{}'.format(spacer, converted_values[o][i])
+            formatted_values[i].append(formatted)
+
+        tablespacer = '═' * (max_diff)
+        titlespacer = ' ' * (max_diff)
+        spacertable[i].append(tablespacer)
+        spacertable[i].append(titlespacer)
+
+    return spacertable, formatted_values
 
 def loop_or_close():
         question = input('\nWould you like to calculate another salary? (Y/N)\n')
@@ -163,14 +228,14 @@ def loop_or_close():
         if question.upper() not in alpha:
             print('Invalid input. Please type \'Y\' or \'N\'.')
             loop_or_close()
-        if question.upper() is 'Y' or 'N':
+        if question is 'Y' or 'N':
             check = True
         if check is False:
             print('Invalid input. Please type \'Y\' or \'N\'.')
-            loop_or_close
-        if question.upper() is 'Y':
+            loop_or_close()
+        if question == 'Y' or question == 'y':
             salarycalc()
-        if question.upper() is 'N':
+        if question == 'N' or question == 'n':
             exit()
 
 def salarycalc():
@@ -188,6 +253,7 @@ def salarycalc():
     gross_income = float(gross_income)
 
     personal_allowance, tax_letter = tax_code_seperator(get_tax_code())
+    print(personal_allowance, tax_letter)
 
     taxable_income, basic_tax, higher_tax, additional_tax, tax = calculate_tax(gross_income, personal_allowance)
 
@@ -200,34 +266,42 @@ def salarycalc():
     net_income = calculate_net(gross_income, tax, nic)
 
     table_values = [[gross_income], [taxable_income], [tax], [nic], [net_income]]
-    print()
 
-    converted_values = get_formatted(table_values)
-    
-    gyic = converted_values[0][0]
-    gmic = converted_values[0][1]
-    gwic = converted_values[0][2]
-    gdic = converted_values[0][3]
+    spacertable, formatted_values = tableformatter(get_formatted(table_values))
 
-    tiyc = converted_values[1][0]
-    timc = converted_values[1][1]
-    tiwc = converted_values[1][2]
-    tidc = converted_values[1][3]
+    ytas = spacertable[0][0]
+    ytis = spacertable[0][1]
+    gyic = formatted_values[0][0]
+    tiyc = formatted_values[0][1]
+    txyc = formatted_values[0][2]
+    ncyc = formatted_values[0][3]
+    niyc = formatted_values[0][4]
 
-    txyc = converted_values[2][0]
-    txmc = converted_values[2][1]
-    txwc = converted_values[2][2]
-    txdc = converted_values[2][3]
+    mtas = spacertable[1][0]
+    mtis = spacertable[1][1]
+    gmic = formatted_values[1][0]
+    timc = formatted_values[1][1]
+    txmc = formatted_values[1][2]
+    ncmc = formatted_values[1][3]
+    nimc = formatted_values[1][4]
 
-    ncyc = converted_values[3][0]
-    ncmc = converted_values[3][1]
-    ncwc = converted_values[3][2]
-    ncdc = converted_values[3][3]
+    wtas = spacertable[2][0]
+    wtis = spacertable[2][1]
+    gwic = formatted_values[2][0]
+    tiwc = formatted_values[2][1]
+    txwc = formatted_values[2][2]
+    ncwc = formatted_values[2][3]
+    niwc = formatted_values[2][4]
 
-    niyc = converted_values[4][0]
-    nimc = converted_values[4][1]
-    niwc = converted_values[4][2]
-    nidc = converted_values[4][3]
+    dtas = spacertable[3][0]
+    dtis = spacertable[3][1]
+    gdic = formatted_values[3][0]
+    tidc = formatted_values[3][1]
+    txdc = formatted_values[3][2]
+    ncdc = formatted_values[3][3]
+    nidc = formatted_values[3][4]
+
+    pension = ''
 
     if personal_allowance == 0:
         print('Personal Allowance\nYou do not have a Personal Allowance.')
@@ -244,27 +318,21 @@ def salarycalc():
 
 
 
-    print("""
-                         ╔═══════════════╦═══════════════╦═══════════════╦═══════════════╗
-                         ║ Yearly        ║ Monthly       ║ Weekly        ║ Daily         ║
-    ╔════════════════════╬═══════════════╬═══════════════╬═══════════════╬═══════════════╣
-    ║ Gross Income       ║ {} ║ {} ║ {} ║ {} ║
-    ╠════════════════════╬═══════════════╬═══════════════╬═══════════════╬═══════════════╣
-    ║ Taxable Income     ║ {} ║ {} ║ {} ║ {} ║
-    ╠════════════════════╬═══════════════╬═══════════════╬═══════════════╬═══════════════╣
-    ║ Tax                ║ {} ║ {} ║ {} ║ {} ║
-    ╠════════════════════╬═══════════════╬═══════════════╬═══════════════╬═══════════════╣
-    ║ National Insurance ║ {} ║ {} ║ {} ║ {} ║
-    ╠════════════════════╬═══════════════╬═══════════════╬═══════════════╬═══════════════╣
-    ║ Net Income         ║ {} ║ {} ║ {} ║ {} ║
-    ╚════════════════════╩═══════════════╩═══════════════╩═══════════════╩═══════════════╝
-    """.format(
-        gyic, gmic, gwic, gdic, 
-        tiyc, timc, tiwc, tidc, 
-        txyc, txmc, txwc, txdc,
-        ncyc, ncmc, ncwc, ncdc,
-        niyc, nimc, niwc, nidc
-        ))
+    print(f"""
+                         ╔═══════════════{ytas}╦═══════════════{mtas}╦═══════════════{wtas}╦═══════════════{dtas}╗
+                         ║ Yearly        {ytis}║ Monthly       {mtis}║ Weekly        {wtis}║ Daily         {dtis}║
+    ╔════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+    ║ Gross Income       ║ {gyic} ║ {gmic} ║ {gwic} ║ {gdic} ║{pension}
+    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+    ║ Taxable Income     ║ {tiyc} ║ {timc} ║ {tiwc} ║ {tidc} ║
+    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+    ║ Tax                ║ {txyc} ║ {txmc} ║ {txwc} ║ {txdc} ║
+    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+    ║ National Insurance ║ {ncyc} ║ {ncmc} ║ {ncwc} ║ {ncdc} ║
+    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+    ║ Net Income         ║ {niyc} ║ {nimc} ║ {niwc} ║ {nidc} ║
+    ╚════════════════════╩═══════════════{ytas}╩═══════════════{mtas}╩═══════════════{wtas}╩═══════════════{dtas}╝
+    """)
 
     loop_or_close()
 
