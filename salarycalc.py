@@ -1,4 +1,4 @@
-import os, math
+import os
 
 # To update this to pull from a CSV
 tax_letters = {
@@ -6,7 +6,7 @@ tax_letters = {
     "M": "Marriage Allowance: you’ve received a transfer of 10% of your partner’s\n   Personal Allowance",
     "N": "Marriage Allowance: you’ve transferred 10% of your Personal Allowance\n   to your partner",
     "T": "Your tax code includes other calculations to work out your Personal Allowance",
-    "0T": "Your Personal Allowance has been used up, or you’ve started a new job\n    and your employer does not have the details they need to give you a tax code",
+    "0T": "Your Personal Allowance has been used up, or you’ve started a new job and\n    your employer does not have the details they need to give you a tax code",
     "BR": "All your income from this job or pension is taxed at the basic rate\n    (usually used if you’ve got more than one job or pension)",
     "D0": "All your income from this job or pension is taxed at the higher rate\n    (usually used if you’ve got more than one job or pension)",
     "D1": "All your income from this job or pension is taxed at the additional rate\n    (usually used if you’ve got more than one job or pension)",
@@ -184,7 +184,6 @@ def get_pension(gross_income):
             print('Invalid input. Please enter a number.')
     
     pension = gross_income * pension_percent
-
     return pension_percent, pension
 
 
@@ -212,7 +211,7 @@ def calculate_tax(gross_income, personal_allowance, tax_letter, pension):
     else: 
         basic_tax = (basic_cap - set_personal_allowance) * basic_rate
         higher_tax = (higher_cap - basic_cap + set_personal_allowance) * higher_rate
-        additional_tax = (gross_income - higher_cap) * additional_rate
+        additional_tax = (taxable_income - higher_cap) * additional_rate
         tax = basic_tax + higher_tax + additional_tax
 
     if tax_letter == 'D0':
@@ -226,7 +225,7 @@ def calculate_tax(gross_income, personal_allowance, tax_letter, pension):
         higher_tax = 0
         additional_tax = taxable_income * additional_rate
         tax = additional_tax
-
+        
     return taxable_income, basic_tax, higher_tax, additional_tax, tax
 
 # Calculating National Insurance Contributions
@@ -326,7 +325,6 @@ def tableformatter(converted_values):
         titlespacer = ' ' * (max_diff)
         spacertable[i].append(tablespacer)
         spacertable[i].append(titlespacer)
-
     return spacertable, formatted_values
 
 # Creates spacers and reformats values to expand the table if the output values are too long
@@ -347,7 +345,7 @@ def tableformatter_single(converted_values, converted_values_single):
         
         # Define 'formatted' in case value will fit inside of the provided table
         formatted_table = '£{}'.format(converted_values[0][i])
-        formatted = '£{}'.format(converted_values[0][i])
+        formatted = '£{}'.format(converted_values_single[i])
         if len(converted_values[0][i]) > 12:               
             len_diff = len(converted_values[0][i]) - 12
             if len_diff >= max_diff:
@@ -364,7 +362,6 @@ def tableformatter_single(converted_values, converted_values_single):
         spacertable[i].append(tablespacer)
         spacertable[i].append(titlespacer)
 
-    print(formatted_values)
     return formatted_values
     
 # Restarts code or exits based on user input
@@ -452,7 +449,6 @@ def salarycalc():
     nidc = formatted_values[3][4]
 
     # For adding a pension row if user chooses to provide pension
-    # Will add feature at a later date
     if pension == '' or pension == 0:
         pension_row = ''
     else:
@@ -486,6 +482,22 @@ def salarycalc():
     ║ Net Income         ║ {niyc} ║ {nimc} ║ {niwc} ║ {nidc} ║
     ╚════════════════════╩═══════════════{ytas}╩═══════════════{mtas}╩═══════════════{wtas}╩═══════════════{dtas}╝
     """)
+
+    fbtax = tableformatter_single(get_formatted(table_values), get_formatted_single(basic_tax))[0]
+    fhtax = tableformatter_single(get_formatted(table_values), get_formatted_single(higher_tax))[0]
+    fatax = tableformatter_single(get_formatted(table_values), get_formatted_single(additional_tax))[0]
+    
+    flnic = tableformatter_single(get_formatted(table_values), get_formatted_single(lower_nic))[0]
+    fhnic = tableformatter_single(get_formatted(table_values), get_formatted_single(higher_nic))[0]
+
+    input('Press enter for Tax and NIC breakdown\'s\n')
+    print('Tax Breakdown\n=============')
+    print(f'Basic Rate:         {fbtax}')
+    print(f'Higher Rate:        {fhtax}')
+    print(f'Additional Rate:    {fatax}')
+    print('\nNIC Breakdown\n=============')
+    print(f'Lower Rate:         {flnic}')
+    print(f'Higher Rate:        {fhnic}\n')
     
     # Asks user if they want to calculate another salary or exit the program
     loop_or_close()

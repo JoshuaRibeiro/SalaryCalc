@@ -68,11 +68,15 @@ def get_tax_code():
             tax_letter_index = tax_code.index(char)
             print('Passed letter check')
             break
+        else:
+            pass
     
     if tax_letter_index == '':
         print('Failed letter check')
         print('Invalid input. Please enter your tax code.')
         get_tax_code()
+    else:
+        pass
 
     print('Tax Code after letter check:', tax_code)
 
@@ -87,6 +91,8 @@ def get_tax_code():
     elif tax_letter in tax_letters.keys():
         print('Tax Code during dictionary match check (true):', tax_code)
         print('Passed dictionary match check')
+    else:
+        pass
         
     print('Tax Code after dictionary match check:', tax_code)
 
