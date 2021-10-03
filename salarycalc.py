@@ -491,7 +491,7 @@ def salarycalc():
     fhnic = tableformatter_single(get_formatted(table_values), get_formatted_single(higher_nic))[0]
 
     input('Press enter for Tax and NIC breakdown\'s\n')
-    print('Tax Breakdown\n=============')
+    print('\nTax Breakdown\n=============')
     print(f'Basic Rate:         {fbtax}')
     print(f'Higher Rate:        {fhtax}')
     print(f'Additional Rate:    {fatax}')
