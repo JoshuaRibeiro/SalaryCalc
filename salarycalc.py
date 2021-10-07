@@ -1,57 +1,96 @@
-import os
+import os, csv
 
-# To update this to pull from a CSV
-tax_letters = {
-    "L": "You’re entitled to the standard tax-free Personal Allowance",
-    "M": "Marriage Allowance: you’ve received a transfer of 10% of your partner’s\n   Personal Allowance",
-    "N": "Marriage Allowance: you’ve transferred 10% of your Personal Allowance\n   to your partner",
-    "T": "Your tax code includes other calculations to work out your Personal Allowance",
-    "0T": "Your Personal Allowance has been used up, or you’ve started a new job and\n    your employer does not have the details they need to give you a tax code",
-    "BR": "All your income from this job or pension is taxed at the basic rate\n    (usually used if you’ve got more than one job or pension)",
-    "D0": "All your income from this job or pension is taxed at the higher rate\n    (usually used if you’ve got more than one job or pension)",
-    "D1": "All your income from this job or pension is taxed at the additional rate\n    (usually used if you’ve got more than one job or pension)",
-    "NT": "You’re not paying any tax on this income",
-    "S": "Your income or pension is taxed using the rates in Scotland",
-    "S0T": "Your Personal Allowance (Scotland) has been used up, or you’ve started\n     a new job and your employer does not have the details they need to give you a tax code",
-    "SBR": "All your income from this job or pension is taxed at the basic rate in\n     Scotland (usually used if you’ve got more than one job or pension)",
-    "SD0": "All your income from this job or pension is taxed at the intermediate\n     rate in Scotland (usually used if you’ve got more than one job or pension)",
-    "SD1": "All your income from this job or pension is taxed at the higher rate in\n     Scotland (usually used if you’ve got more than one job or pension)",
-    "SD2": "All your income from this job or pension is taxed at the top rate in\n     Scotland (usually used if you’ve got more than one job or pension)",
-    "C": "Your income or pension is taxed using the rates in Wales",
-    "C0T": "Your Personal Allowance (Wales) has been used up, or you’ve started a\n     new job and your employer does not have the details they need to give you a tax code",
-    "CBR": "All your income from this job or pension is taxed at the basic rate in\n     Wales (usually used if you’ve got more than one job or pension)",
-    "CD0": "All your income from this job or pension is taxed at the higher rate in\n     Wales (usually used if you’ve got more than one job or pension)",
-    "CD1": "All your income from this job or pension is taxed at the additional rate\n     in Wales (usually used if you’ve got more than one job or pension)"
-    }
+annual_allowance=0
 
-# To update this to pull from a CSV
-default_tax_code = '1257L'
+with open('CSVs/taxletters.csv', mode='r', encoding='utf-8-sig', newline='') as infile:
+    reader = csv.reader(infile)
+    for rows in reader:
+        tax_letters = dict((rows[0],rows[1]) for rows in reader)
 
-# To update this to pull from a CSV
-tax_brackets = {
-    'Personal Allowance': 12570,
-    'Basic': [0, 0.2],
-    'Higher': [50270, 0.4],
-    'Additional': [150000, 0.45]
-}
+with open('CSVs/tax_years.csv', mode='r', encoding='utf-8-sig') as infile:
+    reader = csv.reader(infile)
+    for rows in reader:
+        tax_years = dict((rows[0],[rows[1], rows[2]]) for rows in reader)
 
-# To update this to pull from a CSV
-nic_brackets = {
-    'Lower': [9568, 0.12],
-    'Higher': [50270, 0.02]
-}
+def get_tax_year():
+    check = True
+    print('List of available tax years\n')
+    i = 0
+    while i+2 < (len(tax_years)-1):
+        key1 = list(tax_years)[i]
+        val1 = tax_years[key1][0]
+        i += 3
+        key2 = list(tax_years)[i]
+        val2 = tax_years[key2][0]
+        i -= 2
+        print(f'    [{key1}] {val1}             [{key2}] {val2}')
+    
+    print('\nPlease choose an option from the above\n\n')
 
-set_personal_allowance = tax_brackets['Personal Allowance']
-basic_rate = tax_brackets['Basic'][1]
-basic_cap = tax_brackets['Higher'][0]
-higher_rate = tax_brackets['Higher'][1]
-higher_cap = tax_brackets['Additional'][0]
-additional_rate = tax_brackets['Additional'][1]
+    while check:
+        print('\033[1A                    \033[K')
+        choice = input('\033[1A\033[K')
 
-nic_lower_floor = nic_brackets['Lower'][0]
-nic_lower_rate = nic_brackets['Lower'][1]
-nic_higher_floor = nic_brackets['Higher'][0]
-nic_higher_rate = nic_brackets['Higher'][1]
+        try:
+            checkChoice = int(choice)
+            if checkChoice in range(1,len(tax_years)+1):
+                check = False
+                screen_clear()
+                print(f'Calculating salary based on the tax year {tax_years[choice][0]}\n')
+        except:
+            print('\033[3A\033[KInvalid input. Please enter a number between 1 - 6.\n\n')
+        finally:
+            pass
+
+    return tax_years[choice][1]
+
+def get_tax_brackets(tax_year):
+
+    with open(f'CSVs/{tax_year}', mode='r', encoding='utf-8-sig') as infile:
+        reader = csv.reader(infile)
+        for rows in reader:
+            brackets = dict((rows[0],[rows[1],rows[2]]) for rows in reader)
+
+    global default_tax_code
+    default_tax_code = brackets['default'][0]
+    # tax_brackets = {
+    #     'Personal Allowance': 12570,
+    #     'Basic': [0, 0.2],
+    #     'Higher': [50270, 0.4],
+    #     'Additional': [150000, 0.45]
+    # }
+
+    # # To update this to pull from a CSV
+    # nic_brackets = {
+    #     'Lower': [9568, 0.12],
+    #     'Higher': [50270, 0.02]
+    # }
+    global set_personal_allowance
+    set_personal_allowance = int(brackets['personal_allowance'][0])
+    global basic_rate, basic_cap
+    basic_rate, basic_cap = float(brackets['tax_basic'][1]), int(brackets['tax_higher'][0])
+    global higher_rate, higher_cap
+    higher_rate, higher_cap = float(brackets['tax_higher'][1]), int(brackets['tax_additional'][0])
+    global additional_rate
+    additional_rate = float(brackets['tax_additional'][1])
+
+    global nic_lower_floor
+    nic_lower_floor = int(brackets['nic_lower'][0])
+    global nic_lower_rate
+    nic_lower_rate = float(brackets['nic_lower'][1])
+    global nic_higher_floor
+    nic_higher_floor = int(brackets['nic_higher'][0])
+    global nic_higher_rate
+    nic_higher_rate = float(brackets['nic_higher'][1])
+
+    global annual_allowance
+    annual_allowance = int(brackets['annual_allowance'][0])
+    global minimum_allowance
+    minimum_allowance = int(brackets['minimum_allowance'][0])
+    global threshold_cap
+    threshold_cap = int(brackets['threshold'][0])
+    global adjusted_cap
+    adjusted_cap = int(brackets['adjusted'][0])
 
 # Function for clearing screen
 def screen_clear():
@@ -64,22 +103,40 @@ def screen_clear():
 
 def get_gross_income():
     check = True
-
+    print('Gross Income')
+    gross_income = input('£')
     while check:
-        gross_income = input('Gross Income: £')
-
         if ',' in gross_income:
             gross_income = gross_income.replace(',', '')
 
         if '£' in gross_income:
             gross_income = gross_income.replace('£', '')
-        
+            
         try:
             gross_income = float(gross_income)
-            check = False
+            if gross_income > 999999999999:
+                print('\033[2A\033[KGross Income                             \n£{:,.2f}\n'.format(round(gross_income, 2)))
+                print('WARNING: This program has the capacity to produce a table using any value provided\nto it. However, as the table expands based off of the length of the value, the\namount you have entered may cause the table to be too large for your screen.\n')
+                contCheck = True
+                print('Are you sure you would like to continue? (Y/N)')
+                while contCheck:
+                    choice = input('').upper()
+                    if choice == 'Y':
+                        print('\033[1A\033[KY\n')
+                        contCheck = False
+                        check = False
+                    elif choice == 'N':
+                        print('\033[1A\033[KN\n')
+                        loop_or_close()
+                    else:
+                        print('\033[2A\033[KInvalid input. Are you sure you would like to continue? (Y/N)')
+            else:
+                check = False
+                print('\033[2A\033[KGross Income                             \n£{:,.2f}\n'.format(round(gross_income, 2)))
         except:
-            print('Invalid input. Please enter a number.')
-    
+            print('\033[2A\033[KYour input contained letters. Please enter your Gross Annual Income.\n                                                 ')
+            gross_income = input('\033[1A\033[K£')
+
     return gross_income
 
 # Checking tax code contains a letter
@@ -104,46 +161,49 @@ def verify2(tax_letter, tax_letters):
         return True
 
 # Gets tax code from user input
-def get_tax_code(tax_letters, gross_income):
+def get_tax_code(tax_letters):
 
     # All commented prints are for testing purposes 
 
     # Running validation on user input
     check1 = True
     check2 = True
-
+    
+    print('Tax Code (Leave blank for default tax code)')
+    tax_code = input('')
     while check1 or check2:
-        tax_code = input('Tax Code (Leave blank for default tax code): ')
         if tax_code == '':
             tax_code = default_tax_code
-        # print('Tax Code after input:', tax_code)
+        
         tax_letter_index = verify1(tax_code)
         if tax_letter_index != -1:
             check1 = False
             tax_letter = tax_code[tax_letter_index:].upper()
-            # print('Tax Code after letter check:', tax_code)
-            check2 = verify2(tax_letter, tax_letters)
-            if check2:
-                # print('Tax Code during dictionary match check (false):', tax_code)
-                # print('Failed dictionary match check')
-                print('Invalid input. Please enter your tax code.')
-            # else:    
-                # print('Tax Code during dictionary match check (true):', tax_code)
-                # print('Passed dictionary match check')
-                # print('Tax Code after dictionary match check:', tax_code)
-                
-        
+            if len(tax_code[:tax_letter_index]) > 4:
+                print('\033[2A\033[KTax Code can not contain more than 4 numbers.\n                                      ')
+                tax_code = input('\033[1A\033[K')
+            else:
+                # print('Tax Code after letter check:', tax_code)
+                check2 = verify2(tax_letter, tax_letters)
+                if check2:
+                    print('\033[2A\033[KProvided Tax Code does not exist.\n                                      ')
+                    tax_code = input('\033[1A\033[K')
         else:
-            # print('Failed letter check')
-            print('Invalid input. Please enter your tax code.')
+            print('\033[2A\033[KProvided Tax Code does not exist.\n                                       ')
+            tax_code = input('\033[1A\033[K')
 
-    
+    print('\033[3A\033[K                                                            ')
+
+    return tax_code, tax_letter_index
+
+def tax_code_seperator(gross_income, tax_code, tax_letter_index, total_pension = 0):
     # Getting personal allowance from Tax Code
-    personal_allowance = tax_code[:tax_letter_index]
-
+    personal_allowance = float(tax_code[:tax_letter_index]) * 10
+    tax_letter = tax_code[tax_letter_index:].upper()
+    
     # Setting personal allowance exceptions for gross income over £100,000
-    if gross_income > 100000:
-        personal_allowance = set_personal_allowance - ((gross_income - 100000) / 2)
+    if gross_income - total_pension > 100000:
+        personal_allowance = personal_allowance - ((gross_income - 100000 - total_pension) / 2)
 
         if personal_allowance < 0:
             personal_allowance = 0
@@ -151,66 +211,130 @@ def get_tax_code(tax_letters, gross_income):
         if tax_letter == default_tax_code[tax_letter_index:]:
             tax_letter = '0T'
 
-    if personal_allowance == '' or tax_letter == '0T':
+    if personal_allowance == '':
         personal_allowance = 0
-    else:
-        personal_allowance = float(personal_allowance) * 10
-
+    
     return personal_allowance, tax_letter
 
 # Get pension, or don't
-def get_pension(gross_income):
+def get_pension():
     check = True
 
+    print('Pension (Leave blank for 0%)')
+    pp_display = input()
     while check:
-        pension_percent = input('Pension (Leave blank for 0%):    %\x1B[4D')
-        
-        if ',' in pension_percent:
-            pension_percent = pension_percent.replace(',', '')
+        if ',' in pp_display:
+            pp_display = pp_display.replace(',', '')
 
-        if '£' in pension_percent:
-            pension_percent = pension_percent.replace('£', '')
+        if '£' in pp_display:
+            pp_display = pp_display.replace('£', '')
         
-        if '%' in pension_percent:
-            pension_percent = pension_percent.replace('%', '')
+        if '%' in pp_display:
+            pp_display = pp_display.replace('%', '')
 
-        if pension_percent == '':
-            pension_percent = 0
+        if pp_display == '':
+            pp_display = 0
 
         try:
-            pension_percent = (float(pension_percent))/100
-            check = False
-        except:
-            print('Invalid input. Please enter a number.')
-    
-    pension = gross_income * pension_percent
-    return pension_percent, pension
+            pension_percent = (int(pp_display))/100
+            pp_display = round(int(pp_display), 0)
+            if pp_display >= 100:
+                print('\033[2A\033[KMust be less than 100%. Please enter pension%, or leave blank for 0%.\n                                            ')
+                pp_display = input('\033[1A\033[K')
+            else:
+                check = False
+        except ValueError:
+            try:
+                pension_percent = (float(pp_display))/100
+                pp_display = round(float(pp_display), 1)
+                if pp_display >= 100:
+                    print('\033[2A\033[KMust be less than 100%. Please enter pension%, or leave blank for 0%.\n                                            ')
+                    pp_display = input('\033[1A\033[K')
+                else:
+                    check = False
+            except:
+                print('\033[2A\033[KMust be a number. Please enter pension%, or leave blank for 0%.\n                                            ')
+                pp_display = input('\033[1A\033[K')
 
+    print('\033[2A\033[KPension Contributions\n                                            ')
+    print(f'\033[1A\033[K{pp_display}%\n')
+    
+    return pension_percent
+
+def calculate_total_pension(gross_income, pension_percent):
+    return gross_income * pension_percent
+
+def get_monthly_income():
+    check = True
+    print('Monthly Income after tax')
+    monthly_income = input('£')
+    while check:
+        if ',' in monthly_income:
+            monthly_income = monthly_income.replace(',', '')
+
+        if '£' in monthly_income:
+            monthly_income = monthly_income.replace('£', '')
+            
+        try:
+            monthly_income = float(monthly_income)
+            if monthly_income > 999999999999:
+                print('\033[2A\033[KMonthly Income                             \n£{:,.2f}\n'.format(round(monthly_income, 2)))
+                print('WARNING: This program has the capacity to produce a table using any value provided\nto it. However, as the table expands based off of the length of the value, the\namount you have entered may cause the table to be too large for your screen.\n')
+                contCheck = True
+                print('Are you sure you would like to continue? (Y/N)')
+                while contCheck:
+                    choice = input('').upper()
+                    if choice == 'Y':
+                        print('\033[1A\033[KY\n')
+                        contCheck = False
+                        check = False
+                    elif choice == 'N':
+                        print('\033[1A\033[KN\n')
+                        loop_or_close()
+                    else:
+                        print('\033[2A\033[KInvalid input. Are you sure you would like to continue? (Y/N)')
+            else:
+                check = False
+                print('\033[2A\033[KMonthly Income                             \n£{:,.2f}\n'.format(round(monthly_income, 2)))
+        except:
+            print('\033[2A\033[KYour input contained letters. Please enter your Gross Annual Income.\n                                                 ')
+            monthly_income = input('\033[1A\033[K£')
+
+    return monthly_income
 
 # Calculating Tax
-def calculate_tax(gross_income, personal_allowance, tax_letter, pension):
+def calculate_tax(gross_income, personal_allowance, tax_letter, total_pension, threshold_income=0, pension_allowance=annual_allowance):
     
-    if gross_income < (personal_allowance + pension) :
+    if threshold_income > 0:
+        pass
+    else: 
+        personal_allowance = 0
+    global deductable_pension
+    if total_pension > pension_allowance:
+        deductable_pension = total_pension + pension_allowance
+    else:
+        deductable_pension = total_pension
+
+    if gross_income < (personal_allowance + total_pension) :
         taxable_income = 0
     else:
-        taxable_income = gross_income - pension - personal_allowance
+        taxable_income = gross_income - total_pension - personal_allowance
     
-
-    if gross_income < basic_cap or tax_letter == 'BR':
+    if taxable_income < basic_cap or tax_letter == 'BR':
         basic_tax = taxable_income * basic_rate
         higher_tax = 0
         additional_tax = 0
         tax = basic_tax
 
-    elif gross_income < higher_cap:
-        basic_tax = (basic_cap - set_personal_allowance) * basic_rate
-        higher_tax = (taxable_income - basic_cap + set_personal_allowance) * higher_rate
+    elif taxable_income < higher_cap:
+        basic_tax = basic_cap * basic_rate
+        higher_tax = (taxable_income - basic_cap) * higher_rate
         additional_tax = 0
         tax = basic_tax + higher_tax
 
     else: 
-        basic_tax = (basic_cap - set_personal_allowance) * basic_rate
-        higher_tax = (higher_cap - basic_cap + set_personal_allowance) * higher_rate
+        basic_tax = (basic_cap) * basic_rate
+        higher_tax = (higher_cap - basic_cap) * higher_rate
         additional_tax = (taxable_income - higher_cap) * additional_rate
         tax = basic_tax + higher_tax + additional_tax
 
@@ -251,6 +375,24 @@ def calculate_net(gross_income, pension, tax, nic):
     if net_income < 0:
         net_income = 0
     return net_income
+
+def calculate_threshold_income(net_income, total_pension, deductable_pension):
+    return (net_income - total_pension) + deductable_pension
+
+def calculate_adjusted_income(net_income, deductable_pension):
+    return (net_income + deductable_pension)
+
+def calculate_annual_allowance(threshold_income, adjusted_income):
+    if threshold_income < threshold_cap:
+        adjusted_annual_allowance = annual_allowance
+    elif adjusted_income < adjusted_cap:
+        adjusted_annual_allowance = annual_allowance
+    else:
+        adjusted_annual_allowance = annual_allowance - ((annual_allowance - adjusted_cap) / 2)
+    if adjusted_annual_allowance < minimum_allowance:
+        adjusted_annual_allowance = minimum_allowance
+    
+    return adjusted_annual_allowance
 
 # Formats outputted values to fit in the table
 def get_formatted(table_values):
@@ -363,13 +505,16 @@ def tableformatter_single(converted_values, converted_values_single):
         spacertable[i].append(titlespacer)
 
     return formatted_values
-    
+
+def export_csv():
+    pass
+
 # Restarts code or exits based on user input
 def loop_or_close():
         question = str(input('Would you like to calculate another salary? (Y/N)\n')).upper()
 
         if question == 'Y' or question == 'y':
-            salarycalc()
+            user_choice()
         elif question == 'N' or question == 'n':
             exit()
 
@@ -380,23 +525,28 @@ def loop_or_close():
         elif question != 'Y' or question != 'N':
             print('\nInvalid input. Please type \'Y\' or \'N\'.')
             loop_or_close()
-            
 
-# Main function, defined as function to allow for looping back to start
+# Calculate tax from gross income
 def salarycalc():
     screen_clear()
     
+    # Pulling tax brackets from CSVs
+    get_tax_brackets(get_tax_year())
+
     # Defining gross_income
     gross_income = get_gross_income()
     
-    # Pulling personal_allowance and tax_letter using previous functions
-    personal_allowance, tax_letter = get_tax_code(tax_letters, gross_income)
+    # Defining pension amount
+    total_pension = calculate_total_pension(gross_income, get_pension())
 
-    pension_percent, pension = get_pension(gross_income)
+    # Getting tax code
+    tax_code, tax_letter_index = get_tax_code(tax_letters)
+
+    # Pulling personal_allowance and tax_letter using previous functions
+    personal_allowance, tax_letter = tax_code_seperator(gross_income, tax_code, tax_letter_index, total_pension)
 
     # Pulling taxable_income and tax using previous functions 
-    # Additional values to be used in a feature update
-    taxable_income, basic_tax, higher_tax, additional_tax, tax = calculate_tax(gross_income, personal_allowance, tax_letter, pension)
+    taxable_income, basic_tax, higher_tax, additional_tax, tax = calculate_tax(gross_income, personal_allowance, tax_letter, total_pension)
     
     if tax_letter == 'NT':
         taxable_income = 0
@@ -406,11 +556,107 @@ def salarycalc():
     lower_nic, higher_nic, nic = calculate_nic(gross_income)
     
     # Pulling Net Income from calculate_net
-    net_income = calculate_net(gross_income, pension, tax, nic)
+    net_income = calculate_net(gross_income, total_pension, tax, nic)
+
+    threshold_income = calculate_threshold_income(net_income, total_pension, deductable_pension)
+
+    adjusted_income = calculate_adjusted_income(net_income, deductable_pension)
+
+    pension_allowance = calculate_annual_allowance(threshold_income, adjusted_income)
+
+    taxable_income, basic_tax, higher_tax, additional_tax, tax = calculate_tax(gross_income, personal_allowance, tax_letter, total_pension, threshold_income, pension_allowance)
+    
+    # Pulling Net Income from calculate_net
+    net_income = calculate_net(gross_income, total_pension, tax, nic)
+
+    # Getting data ready to format for placement in ASCII table
+    table_values = [[gross_income], [taxable_income], [tax], [nic], [net_income]]
+
+    final_output(list(table_values), int(personal_allowance), basic_tax, higher_tax, additional_tax, lower_nic, higher_nic, tax_letter, total_pension)
+
+# calculate required income from monthly income
+def requiredincome():
+    screen_clear()
+    get_tax_brackets(get_tax_year())
+    monthly_income = get_monthly_income()
+    net_annual = int(monthly_income*12)
+    gross_income = monthly_income*12
+
+    # Defining pension amount
+    pension_percent = get_pension()
+
+    tax_code, tax_letter_index = get_tax_code(tax_letters)
+    
+    # Defining gross_income
+    check = True
+    while check:
+        total_pension = calculate_total_pension(gross_income, pension_percent)
+        # Pulling personal_allowance and tax_letter using previous functions
+        personal_allowance, tax_letter = tax_code_seperator(gross_income, tax_code, tax_letter_index, total_pension)
+
+        # Pulling taxable_income and tax using previous functions 
+        taxable_income, basic_tax, higher_tax, additional_tax, tax = calculate_tax(gross_income, personal_allowance, tax_letter, total_pension)
+        
+        # Pulling National Insurance Contributions from calculate_nic
+        lower_nic, higher_nic, nic = calculate_nic(gross_income)
+        
+        # Pulling Net Income from calculate_net
+        net_income = calculate_net(gross_income, total_pension, tax, nic)
+        threshold_income = calculate_threshold_income(net_income, total_pension, deductable_pension)
+        adjusted_income = calculate_adjusted_income(net_income, deductable_pension)
+        pension_allowance = calculate_annual_allowance(threshold_income, adjusted_income)
+        taxable_income, basic_tax, higher_tax, additional_tax, tax = calculate_tax(gross_income, personal_allowance, tax_letter, total_pension, threshold_income, pension_allowance)
+        net_income = calculate_net(gross_income, total_pension, tax, nic)
+        net_monthly = round(net_income / 12, 2)
+        if net_annual-0.05 <= net_income <= net_annual+0.05:
+            check = False
+        elif net_annual-0.5 < net_income < net_annual+0.5:
+            if net_income < net_annual:
+                gross_income += 0.01
+            else:
+                gross_income -= 0.01
+        elif net_annual-5 < net_income < net_annual+5:
+            if net_income < net_annual:
+                gross_income += 0.1
+            else:
+                gross_income -= 0.1
+        elif net_annual-50 < net_income < net_annual+50:
+            if net_income < net_annual:
+                gross_income += 1
+            else:
+                gross_income -= 1
+        elif net_annual-500 < net_income < net_annual+500:
+            if net_income < net_annual:
+                gross_income += 10
+            else:
+                gross_income -= 10
+        elif net_annual-5000 < net_income < net_annual+5000:
+            if net_income < net_annual:
+                gross_income += 100
+            else:
+                gross_income -= 100
+        elif net_annual-50000 < net_income < net_annual+50000:
+            if net_income < net_annual:
+                gross_income += 1000
+            else:
+                gross_income -= 1000
+        elif net_annual-500000 < net_income < net_annual+500000:
+            if net_income < net_annual:
+                gross_income += 10000
+            else:
+                gross_income -= 10000
+        elif net_income < net_annual:
+            gross_income += 100000
+        else:
+            gross_income -= 100000
     
     # Getting data ready to format for placement in ASCII table
     table_values = [[gross_income], [taxable_income], [tax], [nic], [net_income]]
 
+    final_output(list(table_values), int(personal_allowance), basic_tax, higher_tax, additional_tax, lower_nic, higher_nic, tax_letter, total_pension)
+
+def final_output(table_values, personal_allowance, basic_tax, higher_tax, additional_tax, lower_nic, higher_nic, tax_letter, pension):  
+       
     # Creating spacers and reformatting values if needed
     spacertable, formatted_values = tableformatter(get_formatted(table_values))
 
@@ -458,29 +704,29 @@ def salarycalc():
         pnwc = formatted_pension[2]
         pndc = formatted_pension[3]
         pension_row = f"""
-    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
-    ║ Pension            ║ {pnyc} ║ {pnmc} ║ {pnwc} ║ {pndc} ║"""
+╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+║ Pension            ║ {pnyc} ║ {pnmc} ║ {pnwc} ║ {pndc} ║"""
 
     if personal_allowance == 0:
-        print('\nPersonal Allowance\nYou do not have a Personal Allowance.')
+        print('Personal Allowance                                          \nYou do not have a Personal Allowance.\n')
     else:
-        print('\nPersonal Allowance\n£{:,.2f}'.format(personal_allowance))
-    print('\nTax Letter\n{}: {}'.format(tax_letter, tax_letters[tax_letter]))
+        print('Personal Allowance                                          \n£{:,.2f}\n'.format(personal_allowance))
+    print(f'Tax Letter: {tax_letter}\n{tax_letters[tax_letter]}')
 
     print(f"""
-                         ╔═══════════════{ytas}╦═══════════════{mtas}╦═══════════════{wtas}╦═══════════════{dtas}╗
-                         ║ Yearly        {ytis}║ Monthly       {mtis}║ Weekly        {wtis}║ Daily         {dtis}║
-    ╔════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
-    ║ Gross Income       ║ {gyic} ║ {gmic} ║ {gwic} ║ {gdic} ║{pension_row}
-    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
-    ║ Taxable Income     ║ {tiyc} ║ {timc} ║ {tiwc} ║ {tidc} ║
-    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
-    ║ Tax                ║ {txyc} ║ {txmc} ║ {txwc} ║ {txdc} ║
-    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
-    ║ National Insurance ║ {ncyc} ║ {ncmc} ║ {ncwc} ║ {ncdc} ║
-    ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
-    ║ Net Income         ║ {niyc} ║ {nimc} ║ {niwc} ║ {nidc} ║
-    ╚════════════════════╩═══════════════{ytas}╩═══════════════{mtas}╩═══════════════{wtas}╩═══════════════{dtas}╝
+                     ╔═══════════════{ytas}╦═══════════════{mtas}╦═══════════════{wtas}╦═══════════════{dtas}╗
+                     ║ Yearly        {ytis}║ Monthly       {mtis}║ Weekly        {wtis}║ Daily         {dtis}║
+╔════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+║ Gross Income       ║ {gyic} ║ {gmic} ║ {gwic} ║ {gdic} ║{pension_row}
+╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+║ Taxable Income     ║ {tiyc} ║ {timc} ║ {tiwc} ║ {tidc} ║
+╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+║ Tax                ║ {txyc} ║ {txmc} ║ {txwc} ║ {txdc} ║
+╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+║ National Insurance ║ {ncyc} ║ {ncmc} ║ {ncwc} ║ {ncdc} ║
+╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
+║ Net Income         ║ {niyc} ║ {nimc} ║ {niwc} ║ {nidc} ║
+╚════════════════════╩═══════════════{ytas}╩═══════════════{mtas}╩═══════════════{wtas}╩═══════════════{dtas}╝
     """)
 
     fbtax = tableformatter_single(get_formatted(table_values), get_formatted_single(basic_tax))[0]
@@ -491,7 +737,7 @@ def salarycalc():
     fhnic = tableformatter_single(get_formatted(table_values), get_formatted_single(higher_nic))[0]
 
     input('Press enter for Tax and NIC breakdown\'s\n')
-    print('\nTax Breakdown\n=============')
+    print('Tax Breakdown\n=============')
     print(f'Basic Rate:         {fbtax}')
     print(f'Higher Rate:        {fhtax}')
     print(f'Additional Rate:    {fatax}')
@@ -502,5 +748,31 @@ def salarycalc():
     # Asks user if they want to calculate another salary or exit the program
     loop_or_close()
 
-# Starting salarycalc function
-salarycalc()
+# User choice between salary calc or required income
+def user_choice():
+    screen_clear()
+    print('What would you like to do today?')
+    print()
+    print('     [1] Input annual income, calculate Tax and Net Income.')
+    print('     [2] Input monthly income, calculate annual income.\n')
+    print('Please choose 1 or 2\n')
+    check = True
+    while check:
+        print('\033[1A                    \033[K')
+        choice = input('\033[1A\033[K')
+        try:
+            choice = int(choice)
+            if choice in [1, 2]:
+                if choice == 1:
+                    check = False
+                    final_output(salarycalc())
+                else:
+                    check = False
+                    final_output(requiredincome())
+            else:
+                print('\033[2A\033[KInvalid input. Please enter a number between 1 - 2.\n                      ')
+        except Exception as error:
+            print(f'\033[2A\033[K{error}Invalid input. Please enter a number.\n                    ')
+    input()
+
+user_choice()

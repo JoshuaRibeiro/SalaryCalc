@@ -1,0 +1,12 @@
+﻿Bracket,Amount,
+default,1185L,,
+personal_allowance,11850,,
+tax_basic,0,0.2,
+tax_higher,34500,0.4,
+tax_additional,150000,0.45,
+nic_lower,8424,0.12,
+nic_higher,46350,0.02
+annual_allowance,40000,,
+minimum_allowance,10000,,
+threshold,110000,,
+adjusted,150000,

@@ -1,0 +1,45 @@
+﻿Letter,What they mean,
+"L","You’re entitled to the standard tax-free Personal Allowance",
+"M","[Marriage Allowance] You’ve received a transfer of 10% of your partner’s 
+Personal Allowance",
+"N","[Marriage Allowance] You’ve transferred 10% of your Personal Allowance to 
+your partner",
+"T","Your tax code includes other calculations to work out your 
+Personal Allowance",
+"0T","Your Personal Allowance has been used up, or you’ve started a new job 
+and your employer does not have the details they need to give you a tax code",
+"BR","All your income from this job or pension is taxed at the basic rate 
+(usually used if you’ve got more than one job or pension)",
+"D0","All your income from this job or pension is taxed at the higher rate 
+(usually used if you’ve got more than one job or pension)",
+"D1","All your income from this job or pension is taxed at the additional rate 
+(usually used if you’ve got more than one job or pension)",
+"NT","You’re not paying any tax on this income",
+"S","Your income or pension is taxed using the rates in Scotland",
+"S0T","Your Personal Allowance (Scotland) has been used up, or you’ve started 
+a new job and your employer does not have the details they need to give you a 
+tax code",
+"SBR","All your income from this job or pension is taxed at the basic rate in 
+Scotland (usually used if you’ve got more than one job or pension)",
+"SD0","All your income from this job or pension is taxed at the intermediate 
+rate in Scotland (usually used if you’ve got more than one job or pension)",
+"SD1","All your income from this job or pension is taxed at the higher rate in
+Scotland (usually used if you’ve got more than one job or pension)",
+"SD2","All your income from this job or pension is taxed at the top rate in 
+Scotland (usually used if you’ve got more than one job or pension)",
+"C","Your income or pension is taxed using the rates in Wales",
+"C0T","Your Personal Allowance (Wales) has been used up, or you’ve started a 
+new job and your employer does not have the details they need to give you a 
+tax code",
+"CBR","All your income from this job or pension is taxed at the basic rate in 
+Wales (usually used if you’ve got more than one job or pension)",
+"CD0","All your income from this job or pension is taxed at the higher rate 
+in Wales (usually used if you’ve got more than one job or pension)",
+"CD1","All your income from this job or pension is taxed at the additional 
+rate in Wales (usually used if you’ve got more than one job or pension)",
+"W1","This is an emergency tax code
+You’re entitled to the standard tax-free Personal Allowance",
+"M1","This is an emergency tax code
+You’re entitled to the standard tax-free Personal Allowance",
+"X","This is an emergency tax code
+You’re entitled to the standard tax-free Personal Allowance",
