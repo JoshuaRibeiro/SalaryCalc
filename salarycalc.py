@@ -1,4 +1,5 @@
 import os, csv
+from datetime import datetime
 
 annual_allowance=0
 
@@ -207,9 +208,11 @@ def tax_code_seperator(gross_income, tax_code, tax_letter_index, total_pension =
 
         if personal_allowance < 0:
             personal_allowance = 0
-
-        if tax_letter == default_tax_code[tax_letter_index:]:
-            tax_letter = '0T'
+            if tax_letter == default_tax_code[tax_letter_index:]:
+                tax_letter = '0T'
+        else:
+            if tax_letter == default_tax_code[tax_letter_index:]:
+                tax_letter = 'L'
 
     if personal_allowance == '':
         personal_allowance = 0
@@ -417,7 +420,7 @@ def get_formatted(table_values):
     return converted_values
 
 def get_formatted_single(value):
-    values = [value, value/12, value/52, value/5]
+    values = [value, value/12, value/52, (value/52)/5]
     converted_values_single = []
     i = 0
     for value in values:
@@ -506,25 +509,66 @@ def tableformatter_single(converted_values, converted_values_single):
 
     return formatted_values
 
-def export_csv():
-    pass
+def export_csv(tablevalues, pension):
+
+    check = True
+
+    while check:
+        question = str(input('Would you like to export this salary as a CSV? (Y/N)\n')).upper()
+        if question == 'Y' or question == 'N':
+            check = False
+        # Error handling
+        elif not question.isalpha():
+            print('\nInvalid input. Please type a letter.')
+        elif question != 'Y' or question != 'N':
+            print('\nInvalid input. Please type \'Y\' or \'N\'.')
+
+    if question == 'Y' or question == 'y':
+        gross_income = float(tablevalues[0][0])
+        taxable_income = float(tablevalues[1][0])
+        tax = float(tablevalues[2][0])
+        nic = float(tablevalues[3][0])
+        net_income = float(tablevalues[4][0])
+
+        file_name = 'SalaryCalc_'
+        file_name += datetime.today().strftime('%Y-%m-%d_%H%M%S') 
+
+        with open(f'{file_name}.csv', mode='w', newline='') as csv_file:
+            fieldnames = ['','Yearly', 'Monthly', 'Weekly', 'Daily']
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+            writer.writeheader()
+            writer.writerow({'': 'Gross Income', 'Yearly': gross_income, 'Monthly': gross_income/12, 'Weekly': gross_income/52, 'Daily': (gross_income/52)/5})
+            if pension > 0:
+                writer.writerow({'': 'Pension', 'Yearly': pension, 'Monthly': pension/12, 'Weekly': pension/52, 'Daily': (pension/52)/5})
+            else:
+                pass
+            writer.writerow({'': 'Taxable Income', 'Yearly': taxable_income, 'Monthly': taxable_income/12, 'Weekly': taxable_income/52, 'Daily': (taxable_income/52)/5})
+            writer.writerow({'': 'Tax', 'Yearly': tax, 'Monthly': tax/12, 'Weekly': tax/52, 'Daily': (tax/52)/5})
+            writer.writerow({'': 'National Insurance', 'Yearly': nic, 'Monthly': nic/12, 'Weekly': nic/52, 'Daily': (nic/52)/5})
+            writer.writerow({'': 'Net Income', 'Yearly': net_income, 'Monthly': net_income/12, 'Weekly': net_income/52, 'Daily': (net_income/52)/5})
+        
+        print(f'\nExported salary as CSV with name {file_name}.CSV\n')
+
+    elif question == 'N' or question == 'n':
+        loop_or_close()
 
 # Restarts code or exits based on user input
 def loop_or_close():
-        question = str(input('Would you like to calculate another salary? (Y/N)\n')).upper()
+    question = str(input('Would you like to calculate another salary? (Y/N)\n')).upper()
 
-        if question == 'Y' or question == 'y':
-            user_choice()
-        elif question == 'N' or question == 'n':
-            exit()
+    if question == 'Y' or question == 'y':
+        user_choice()
+    elif question == 'N' or question == 'n':
+        exit()
 
-        # Error handling
-        if not question.isalpha():
-            print('\nInvalid input. Please type a letter.')
-            loop_or_close()
-        elif question != 'Y' or question != 'N':
-            print('\nInvalid input. Please type \'Y\' or \'N\'.')
-            loop_or_close()
+    # Error handling
+    if not question.isalpha():
+        print('\nInvalid input. Please type a letter.')
+        loop_or_close()
+    elif question != 'Y' or question != 'N':
+        print('\nInvalid input. Please type \'Y\' or \'N\'.')
+        loop_or_close()
 
 # Calculate tax from gross income
 def salarycalc():
@@ -703,6 +747,7 @@ def final_output(table_values, personal_allowance, basic_tax, higher_tax, additi
         pnmc = formatted_pension[1]
         pnwc = formatted_pension[2]
         pndc = formatted_pension[3]
+
         pension_row = f"""
 ╠════════════════════╬═══════════════{ytas}╬═══════════════{mtas}╬═══════════════{wtas}╬═══════════════{dtas}╣
 ║ Pension            ║ {pnyc} ║ {pnmc} ║ {pnwc} ║ {pndc} ║"""
@@ -745,6 +790,7 @@ def final_output(table_values, personal_allowance, basic_tax, higher_tax, additi
     print(f'Lower Rate:         {flnic}')
     print(f'Higher Rate:        {fhnic}\n')
     
+    export_csv(table_values, pension)
     # Asks user if they want to calculate another salary or exit the program
     loop_or_close()
 
@@ -763,16 +809,17 @@ def user_choice():
         try:
             choice = int(choice)
             if choice in [1, 2]:
-                if choice == 1:
-                    check = False
-                    final_output(salarycalc())
-                else:
-                    check = False
-                    final_output(requiredincome())
+                check = False
             else:
                 print('\033[2A\033[KInvalid input. Please enter a number between 1 - 2.\n                      ')
         except Exception as error:
             print(f'\033[2A\033[K{error}Invalid input. Please enter a number.\n                    ')
-    input()
+    if choice == 1:
+        check = False
+        final_output(salarycalc())
+    elif choice == 2:
+        final_output(requiredincome())
+
+
 
 user_choice()
