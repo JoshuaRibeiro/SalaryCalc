@@ -524,11 +524,13 @@ def export_csv(tablevalues, pension):
             print('\nInvalid input. Please type \'Y\' or \'N\'.')
 
     if question == 'Y' or question == 'y':
-        gross_income = float(tablevalues[0][0])
-        taxable_income = float(tablevalues[1][0])
-        tax = float(tablevalues[2][0])
-        nic = float(tablevalues[3][0])
-        net_income = float(tablevalues[4][0])
+
+        tabletitles = ['Gross Income', 'Taxable Income', 'Tax', 'National Insurance', 'Net Income']
+
+        if pension > 0:
+            tablevalues.insert(1, [float(pension)])
+            tablevalues[1].extend([pension/12, pension/52, (pension/52)/5])
+            tabletitles.insert(1, 'Pension')
 
         file_name = 'SalaryCalc_'
         file_name += datetime.today().strftime('%Y-%m-%d_%H%M%S') 
@@ -538,15 +540,8 @@ def export_csv(tablevalues, pension):
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
             writer.writeheader()
-            writer.writerow({'': 'Gross Income', 'Yearly': gross_income, 'Monthly': gross_income/12, 'Weekly': gross_income/52, 'Daily': (gross_income/52)/5})
-            if pension > 0:
-                writer.writerow({'': 'Pension', 'Yearly': pension, 'Monthly': pension/12, 'Weekly': pension/52, 'Daily': (pension/52)/5})
-            else:
-                pass
-            writer.writerow({'': 'Taxable Income', 'Yearly': taxable_income, 'Monthly': taxable_income/12, 'Weekly': taxable_income/52, 'Daily': (taxable_income/52)/5})
-            writer.writerow({'': 'Tax', 'Yearly': tax, 'Monthly': tax/12, 'Weekly': tax/52, 'Daily': (tax/52)/5})
-            writer.writerow({'': 'National Insurance', 'Yearly': nic, 'Monthly': nic/12, 'Weekly': nic/52, 'Daily': (nic/52)/5})
-            writer.writerow({'': 'Net Income', 'Yearly': net_income, 'Monthly': net_income/12, 'Weekly': net_income/52, 'Daily': (net_income/52)/5})
+            for i in range(len(tablevalues)):
+                writer.writerow({'': tabletitles[i], 'Yearly': f"£{round(tablevalues[i][0], 2)}", 'Monthly': f"£{round(tablevalues[i][1], 2)}", 'Weekly': f"£{round(tablevalues[i][2], 2)}", 'Daily': f"£{round(tablevalues[i][3], 2)}"})
         
         print(f'\nExported salary as CSV with name {file_name}.CSV\n')
 
@@ -819,7 +814,5 @@ def user_choice():
         final_output(salarycalc())
     elif choice == 2:
         final_output(requiredincome())
-
-
 
 user_choice()
