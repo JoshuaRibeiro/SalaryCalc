@@ -1,4 +1,4 @@
-import os, csv
+import os, csv, sys
 from datetime import datetime
 
 annual_allowance=0
@@ -532,10 +532,24 @@ def export_csv(tablevalues, pension):
             tablevalues[1].extend([pension/12, pension/52, (pension/52)/5])
             tabletitles.insert(1, 'Pension')
 
+        # Defining file name with a root name of 'SalaryCalc_' and appending
+        # the current date and time
         file_name = 'SalaryCalc_'
         file_name += datetime.today().strftime('%Y-%m-%d_%H%M%S') 
 
-        with open(f'{file_name}.csv', mode='w', newline='') as csv_file:
+        # Get dir of current file
+        absolutepath = os.path.abspath(__file__)
+
+        # Get working directory
+        fileDirectory = os.path.dirname(absolutepath)
+
+        # Get parent directory
+        parentDirectory = os.path.dirname(fileDirectory)
+
+        if not os.path.exists(f"{parentDirectory}\\Exports"):
+            os.mkdir(f"{parentDirectory}\\Exports")
+        
+        with open(f"{parentDirectory}\\Exports\\{file_name}.csv", mode='w', newline='') as csv_file:
             fieldnames = ['','Yearly', 'Monthly', 'Weekly', 'Daily']
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
@@ -543,7 +557,7 @@ def export_csv(tablevalues, pension):
             for i in range(len(tablevalues)):
                 writer.writerow({'': tabletitles[i], 'Yearly': f"£{round(tablevalues[i][0], 2)}", 'Monthly': f"£{round(tablevalues[i][1], 2)}", 'Weekly': f"£{round(tablevalues[i][2], 2)}", 'Daily': f"£{round(tablevalues[i][3], 2)}"})
         
-        print(f'\nExported salary as CSV with name {file_name}.CSV\n')
+        print(f'\nCSV Generated\n\n{parentDirectory}\Exports\\{file_name}.csv\n')
 
     elif question == 'N' or question == 'n':
         loop_or_close()
