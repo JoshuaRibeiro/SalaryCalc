@@ -54,18 +54,6 @@ def get_tax_brackets(tax_year):
 
     global default_tax_code
     default_tax_code = brackets['default'][0]
-    # tax_brackets = {
-    #     'Personal Allowance': 12570,
-    #     'Basic': [0, 0.2],
-    #     'Higher': [50270, 0.4],
-    #     'Additional': [150000, 0.45]
-    # }
-
-    # # To update this to pull from a CSV
-    # nic_brackets = {
-    #     'Lower': [9568, 0.12],
-    #     'Higher': [50270, 0.02]
-    # }
     global set_personal_allowance
     set_personal_allowance = int(brackets['personal_allowance'][0])
     global basic_rate, basic_cap
@@ -640,9 +628,10 @@ def requiredincome():
 
     tax_code, tax_letter_index = get_tax_code(tax_letters)
     
+    net_income = -1 
+    
     # Defining gross_income
-    check = True
-    while check:
+    while not net_annual-0.05 <= net_income <= net_annual+0.05:
         total_pension = calculate_total_pension(gross_income, pension_percent)
         # Pulling personal_allowance and tax_letter using previous functions
         personal_allowance, tax_letter = tax_code_seperator(gross_income, tax_code, tax_letter_index, total_pension)
@@ -661,47 +650,18 @@ def requiredincome():
         taxable_income, basic_tax, higher_tax, additional_tax, tax = calculate_tax(gross_income, personal_allowance, tax_letter, total_pension, threshold_income, pension_allowance)
         net_income = calculate_net(gross_income, total_pension, tax, nic)
         net_monthly = round(net_income / 12, 2)
-        if net_annual-0.05 <= net_income <= net_annual+0.05:
-            check = False
-        elif net_annual-0.5 < net_income < net_annual+0.5:
-            if net_income < net_annual:
-                gross_income += 0.01
-            else:
-                gross_income -= 0.01
-        elif net_annual-5 < net_income < net_annual+5:
-            if net_income < net_annual:
-                gross_income += 0.1
-            else:
-                gross_income -= 0.1
-        elif net_annual-50 < net_income < net_annual+50:
-            if net_income < net_annual:
-                gross_income += 1
-            else:
-                gross_income -= 1
-        elif net_annual-500 < net_income < net_annual+500:
-            if net_income < net_annual:
-                gross_income += 10
-            else:
-                gross_income -= 10
-        elif net_annual-5000 < net_income < net_annual+5000:
-            if net_income < net_annual:
-                gross_income += 100
-            else:
-                gross_income -= 100
-        elif net_annual-50000 < net_income < net_annual+50000:
-            if net_income < net_annual:
-                gross_income += 1000
-            else:
-                gross_income -= 1000
-        elif net_annual-500000 < net_income < net_annual+500000:
-            if net_income < net_annual:
-                gross_income += 10000
-            else:
-                gross_income -= 10000
-        elif net_income < net_annual:
-            gross_income += 100000
+
+        r_adjuster = 0.5
+        v_adjuster = 0.01
+
+        while not net_annual - r_adjuster <= net_income <= net_annual + r_adjuster:
+            r_adjuster *= 10
+            v_adjuster *= 10
+        
+        if net_income < net_annual:
+            gross_income += v_adjuster
         else:
-            gross_income -= 100000
+            gross_income += v_adjuster
     
     # Getting data ready to format for placement in ASCII table
     table_values = [[gross_income], [taxable_income], [tax], [nic], [net_income]]
