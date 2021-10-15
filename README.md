@@ -6,18 +6,17 @@ SalaryCalc has 2 applets:
 
 Feature set
 
-    Choose between the 6 latest tax years, and specify pension contributions and tax code (optional)
+    Choose between the 6 latest tax years, and specify pension % and tax code (optional)
     
-    Generate ASCII table with yearly, monthly, weekly, and daily values for Gross Income, Pension (if applicable),
+    Generate ASCII table with yearly, monthly, weekly, and daily values for Gross Income,
     Taxable Income, Tax, National Insurance Contributions, and Net Income
     
-    Expandable ASCII table based on value size (if len(value) > 12: expand column)
+    Table includes pension row if pension% is above 0
     
-    Export ASCII table in CSV format
+    Columns expands based on value size (if len(value) > 12: expand column)
+    
+    Option to export output in CSV format
     
     Output a breakdown showing how much is paid in each tax bracket based off of the input
     
-Reversing Tax
-  
-    Reversing tax uses an algorithm to adjust gross_income proportionately until we retrieve the desired output.
-    
+Reversing tax uses an algorithm to adjust gross income proportionately until the desired output is retrieved.
