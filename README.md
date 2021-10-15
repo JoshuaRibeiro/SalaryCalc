@@ -6,7 +6,7 @@ SalaryCalc has 2 applets:
     Calculate take home pay from gross annual income
     Calculate gross annual income from a desired monthly income
 
-Feature set
+Feature set:
 
     Choose between the 6 latest tax years, and specify pension % and tax code (optional)
     
