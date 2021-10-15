@@ -13,7 +13,7 @@ Feature set
     Generate ASCII table with yearly, monthly, weekly, and daily values for Gross Income,
     Taxable Income, Tax, National Insurance Contributions, and Net Income
     
-    Table includes pension row if pension% is above 0
+    Table includes pension row only if pension % is above 0
     
     Columns expands based on value size (if len(value) > 12: expand column)
     
