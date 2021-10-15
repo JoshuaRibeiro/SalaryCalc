@@ -20,3 +20,5 @@ Feature set
     Output a breakdown showing how much is paid in each tax bracket based off of the input
     
 Reversing tax uses an algorithm to adjust gross income proportionately until the desired output is retrieved.
+
+Read a full breakdown of the code here: https://medium.com/@joshuaribeiro1996/
