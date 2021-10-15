@@ -1,5 +1,5 @@
 # SalaryCalc
-You can read a full breakdown of the code here: https://medium.com/@joshuaribeiro1996/
+View breakdown of the code here: https://medium.com/@joshuaribeiro1996/
 
 SalaryCalc has 2 applets:
 
