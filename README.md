@@ -1,4 +1,6 @@
 # SalaryCalc
+Read a full breakdown of the code here: https://medium.com/@joshuaribeiro1996/
+
 SalaryCalc has 2 applets:
 
     Calculate take home pay from gross annual income
@@ -21,4 +23,3 @@ Feature set
     
 Reversing tax uses an algorithm to adjust gross income proportionately until the desired output is retrieved.
 
-Read a full breakdown of the code here: https://medium.com/@joshuaribeiro1996/
