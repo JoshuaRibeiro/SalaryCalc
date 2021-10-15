@@ -15,7 +15,7 @@ Feature set
     
     Table includes pension row only if pension % is above 0
     
-    Column expands based on value size (if len(value) > 12: expand column)
+    Columns expand based on value sizes (if len(value) > 12: expand column)
     
     Option to export output in CSV format
     
